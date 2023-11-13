@@ -52,3 +52,35 @@ FROM payment
 WHERE customer_id = 526
 HAVING SUM (payment.amount) 
 
+
+--- We did this with Berik and Sarah helped a little))
+
+
+SELECT *
+FROM payment
+SELECT *
+FROM rental
+ALTER TABLE payment
+ADD COLUMN late_fee VARCHAR(50);
+CREATE OR REPLACE PROCEDURE late_fee()
+LANGUAGE plpgsql
+AS $$
+BEGIN
+	UPDATE payment
+	SET late_fee = 'yes'
+	WHERE customer_id IN (
+	SELECT customer_id
+	FROM rental
+	WHERE return_date - rental_date > INTERVAL '7 Days'
+);
+	COMMIT;
+END;
+$$;
+
+CALL late_fee()
+
+
+SELECT *
+FROM payment
+WHERE customer_id = 408;
+
